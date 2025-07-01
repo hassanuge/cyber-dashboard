@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Statistics Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            min-height: 500px;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .chart-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .chart-canvas {
+            width: 100% !important;
+            height: 400px !important;
+            max-height: 400px;
+        }
+        
+        .stats-summary {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        .atolls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .atoll-badge {
+            background: #667eea;
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🔐 Cyber Security Statistics Dashboard</h1>
+            <div class="subtitle">Comprehensive Analysis of Awareness Sessions & Cyber Crime Support</div>
+        </div>
+        
+        <div class="stats-summary">
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-number">161</div>
+                    <div class="stat-label">Total Awareness Sessions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">767</div>
+                    <div class="stat-label">Cyber Support Requests</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">22</div>
+                    <div class="stat-label">Atolls Covered</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">530</div>
+                    <div class="stat-label">Completed Cases</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">📊 Awareness Sessions by Quarter</div>
+                <canvas id="quarterlyChart" class="chart-canvas"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">👥 Sessions by Audience Type</div>
+                <canvas id="audienceChart" class="chart-canvas"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">🏝️ Atolls Covered in Awareness Sessions</div>
+                <div class="atolls-grid" id="atollsGrid"></div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">🚨 Cyber Support Requests by Quarter</div>
+                <canvas id="cyberQuarterlyChart" class="chart-canvas"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">⚖️ Crime Categories Distribution</div>
+                <canvas id="crimeChart" class="chart-canvas"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">📋 Support Request Status</div>
+                <canvas id="statusChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Data from analysis
+            const data = {
+                quarterly: [
+                    {quarter: "Q1 2024", count: 17},
+                    {quarter: "Q2 2024", count: 18},
+                    {quarter: "Q3 2024", count: 30},
+                    {quarter: "Q4 2024", count: 78},
+                    {quarter: "Q1 2025", count: 17},
+                    {quarter: "Q2 2025", count: 1}
+                ],
+                audience: [
+                    {type: "Students", count: 57},
+                    {type: "Parents", count: 60},
+                    {type: "Staff", count: 44}
+                ],
+                atolls: ["AA","ADh","B","DH","Dh","F","GA","GDh","GN","HA","HDh","K","L","LH","M","N","R","S","SH","TH","V","k"],
+                cyberQuarterly: [
+                    {quarter: "Q1 2024", count: 88},
+                    {quarter: "Q2 2024", count: 110},
+                    {quarter: "Q3 2024", count: 150},
+                    {quarter: "Q4 2024", count: 139},
+                    {quarter: "Q1 2025", count: 129},
+                    {quarter: "Q2 2025", count: 151}
+                ],
+                crimeTypes: [
+                    {category: "Online frauds", count: 129},
+                    {category: "Cyber-bullying", count: 101},
+                    {category: "Blackmail", count: 94},
+                    {category: "Identity Theft", count: 79},
+                    {category: "Hacking", count: 74},
+                    {category: "Cyber threats", count: 57},
+                    {category: "Harassment", count: 50},
+                    {category: "Pornography", count: 41}
+                ],
+                status: [
+                    {status: "Completed", count: 530},
+                    {status: "IC Approved", count: 148},
+                    {status: "ISP Requested", count: 74},
+                    {status: "Closed", count: 15}
+                ]
+            };
+            
+            // Color schemes
+            const colors = {
+                primary: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
+                secondary: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'],
+                gradient: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#38f9d7', '#fa709a', '#fee140']
+            };
+            
+            // 1. Quarterly Awareness Sessions Chart
+            const quarterlyCtx = document.getElementById('quarterlyChart').getContext('2d');
+            new Chart(quarterlyCtx, {
+                type: 'line',
+                data: {
+                    labels: data.quarterly.map(d => d.quarter),
+                    datasets: [{
+                        label: 'Awareness Sessions',
+                        data: data.quarterly.map(d => d.count),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 2. Audience Type Chart
+            const audienceCtx = document.getElementById('audienceChart').getContext('2d');
+            new Chart(audienceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.audience.map(d => d.type),
+                    datasets: [{
+                        data: data.audience.map(d => d.count),
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb'],
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // 3. Atolls Grid (not a chart)
+            const atollsGrid = document.getElementById('atollsGrid');
+            data.atolls.forEach(atoll => {
+                const badge = document.createElement('div');
+                badge.className = 'atoll-badge';
+                badge.textContent = atoll;
+                atollsGrid.appendChild(badge);
+            });
+            
+            // 4. Quarterly Cyber Support Requests Chart
+            const cyberQuarterlyCtx = document.getElementById('cyberQuarterlyChart').getContext('2d');
+            new Chart(cyberQuarterlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.cyberQuarterly.map(d => d.quarter),
+                    datasets: [{
+                        label: 'Support Requests',
+                        data: data.cyberQuarterly.map(d => d.count),
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 5. Crime Categories Chart (Horizontal Bar)
+            const crimeCtx = document.getElementById('crimeChart').getContext('2d');
+            new Chart(crimeCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.crimeTypes.map(d => d.category),
+                    datasets: [{
+                        label: 'Number of Cases',
+                        data: data.crimeTypes.map(d => d.count),
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#f093fb', '#f5576c', 
+                            '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 6. Status Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: data.status.map(d => d.status),
+                    datasets: [{
+                        data: data.status.map(d => d.count),
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c'],
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+        });
+    </script>
+</body>
+</html>
