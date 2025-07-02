@@ -156,7 +156,7 @@
             </div>
             
             <div class="chart-container">
-                <div class="chart-title">👥 Sessions by Audience Type</div>
+                <div class="chart-title">👥 Participants by Audience Type</div>
                 <canvas id="audienceChart" class="chart-canvas"></canvas>
             </div>
             
@@ -203,9 +203,9 @@
                     {quarter: "Q2 2025", count: 1}
                 ],
                 audience: [
-                    {type: "Students", count: 57},
-                    {type: "Parents", count: 60},
-                    {type: "Staff", count: 44}
+                    {type: "Students", sessions: 57, participants: 1420},
+                    {type: "Parents", sessions: 60, participants: 1180},
+                    {type: "Staff", sessions: 44, participants: 890}
                 ],
                 atolls: ["AA","ADh","B","DH","Dh","F","GA","GDh","GN","HA","HDh","K","L","LH","M","N","R","S","SH","TH","V","k"],
                 cyberQuarterly: [
@@ -312,9 +312,9 @@
                 new Chart(audienceCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: data.audience.map(d => `${d.type}: ${d.count} sessions`),
+                        labels: data.audience.map(d => `${d.type}: ${d.participants.toLocaleString()} participants`),
                         datasets: [{
-                            data: data.audience.map(d => d.count),
+                            data: data.audience.map(d => d.participants),
                             backgroundColor: ['#667eea', '#764ba2', '#f093fb'],
                             borderWidth: 3,
                             borderColor: '#fff'
@@ -328,7 +328,7 @@
                                 position: 'bottom',
                                 labels: {
                                     font: {
-                                        size: 14,
+                                        size: 13,
                                         weight: 'bold'
                                     },
                                     padding: 20,
@@ -339,11 +339,15 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        const label = context.label || '';
+                                        const audienceType = data.audience[context.dataIndex];
                                         const value = context.parsed;
                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                         const percentage = Math.round((value / total) * 100);
-                                        return `${label} (${percentage}%)`;
+                                        return [
+                                            `${audienceType.type}: ${value.toLocaleString()} participants`,
+                                            `Sessions: ${audienceType.sessions}`,
+                                            `Percentage: ${percentage}%`
+                                        ];
                                     }
                                 }
                             }
