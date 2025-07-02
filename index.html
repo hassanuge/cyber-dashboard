@@ -124,7 +124,7 @@
 <body>
     <div class="dashboard">
         <div class="header">
-            <h1>🔐 Cyber Crime Centre Statistics Dashboard</h1>
+            <h1>🔐 Cyber Security Statistics Dashboard</h1>
             <div class="subtitle">Comprehensive Analysis of Awareness Sessions & Cyber Crime Support</div>
         </div>
         
@@ -186,6 +186,12 @@
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
             
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded');
+                return;
+            }
+            
             // Data from analysis
             const data = {
                 quarterly: [
@@ -236,82 +242,112 @@
             };
             
             // 1. Quarterly Awareness Sessions Chart
-            const quarterlyCtx = document.getElementById('quarterlyChart').getContext('2d');
-            new Chart(quarterlyCtx, {
-                type: 'line',
-                data: {
-                    labels: data.quarterly.map(d => d.quarter),
-                    datasets: [{
-                        label: 'Awareness Sessions',
-                        data: data.quarterly.map(d => d.count),
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#667eea',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+            const quarterlyCanvas = document.getElementById('quarterlyChart');
+            if (quarterlyCanvas) {
+                const quarterlyCtx = quarterlyCanvas.getContext('2d');
+                new Chart(quarterlyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.quarterly.map(d => d.quarter),
+                        datasets: [{
+                            label: 'Awareness Sessions',
+                            data: data.quarterly.map(d => d.count),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0,0,0,0.1)'
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
                             },
-                            ticks: {
-                                font: {
-                                    size: 12
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Sessions: ${context.parsed.y}`;
+                                    }
                                 }
                             }
                         },
-                        x: {
-                            grid: {
-                                color: 'rgba(0,0,0,0.1)'
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    }
+                                }
                             },
-                            ticks: {
-                                font: {
-                                    size: 12
+                            x: {
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
             
             // 2. Audience Type Chart
-            const audienceCtx = document.getElementById('audienceChart').getContext('2d');
-            new Chart(audienceCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: data.audience.map(d => d.type),
-                    datasets: [{
-                        data: data.audience.map(d => d.count),
-                        backgroundColor: ['#667eea', '#764ba2', '#f093fb'],
-                        borderWidth: 3,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
+            const audienceCanvas = document.getElementById('audienceChart');
+            if (audienceCanvas) {
+                const audienceCtx = audienceCanvas.getContext('2d');
+                new Chart(audienceCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.audience.map(d => `${d.type} (${d.count})`),
+                        datasets: [{
+                            data: data.audience.map(d => d.count),
+                            backgroundColor: ['#667eea', '#764ba2', '#f093fb'],
+                            borderWidth: 3,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: {
+                                        size: 12
+                                    },
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${percentage}%`;
+                                    }
+                                }
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
             
             // 3. Atolls Grid (not a chart)
             const atollsGrid = document.getElementById('atollsGrid');
@@ -323,110 +359,150 @@
             });
             
             // 4. Quarterly Cyber Support Requests Chart
-            const cyberQuarterlyCtx = document.getElementById('cyberQuarterlyChart').getContext('2d');
-            new Chart(cyberQuarterlyCtx, {
-                type: 'bar',
-                data: {
-                    labels: data.cyberQuarterly.map(d => d.quarter),
-                    datasets: [{
-                        label: 'Support Requests',
-                        data: data.cyberQuarterly.map(d => d.count),
-                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+            const cyberQuarterlyCanvas = document.getElementById('cyberQuarterlyChart');
+            if (cyberQuarterlyCanvas) {
+                const cyberQuarterlyCtx = cyberQuarterlyCanvas.getContext('2d');
+                new Chart(cyberQuarterlyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.cyberQuarterly.map(d => d.quarter),
+                        datasets: [{
+                            label: 'Support Requests',
+                            data: data.cyberQuarterly.map(d => d.count),
+                            backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            borderSkipped: false
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0,0,0,0.1)'
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Support Requests: ${context.parsed.y}`;
+                                    }
+                                }
                             }
                         },
-                        x: {
-                            grid: {
-                                display: false
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
             
             // 5. Crime Categories Chart (Horizontal Bar)
-            const crimeCtx = document.getElementById('crimeChart').getContext('2d');
-            new Chart(crimeCtx, {
-                type: 'bar',
-                data: {
-                    labels: data.crimeTypes.map(d => d.category),
-                    datasets: [{
-                        label: 'Number of Cases',
-                        data: data.crimeTypes.map(d => d.count),
-                        backgroundColor: [
-                            '#667eea', '#764ba2', '#f093fb', '#f5576c', 
-                            '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
-                        ],
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+            const crimeCanvas = document.getElementById('crimeChart');
+            if (crimeCanvas) {
+                const crimeCtx = crimeCanvas.getContext('2d');
+                new Chart(crimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.crimeTypes.map(d => d.category),
+                        datasets: [{
+                            label: 'Number of Cases',
+                            data: data.crimeTypes.map(d => d.count),
+                            backgroundColor: [
+                                '#667eea', '#764ba2', '#f093fb', '#f5576c', 
+                                '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }]
                     },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0,0,0,0.1)'
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Cases: ${context.parsed.x}`;
+                                    }
+                                }
                             }
                         },
-                        y: {
-                            grid: {
-                                display: false
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
             
             // 6. Status Chart
-            const statusCtx = document.getElementById('statusChart').getContext('2d');
-            new Chart(statusCtx, {
-                type: 'pie',
-                data: {
-                    labels: data.status.map(d => d.status),
-                    datasets: [{
-                        data: data.status.map(d => d.count),
-                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c'],
-                        borderWidth: 3,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
+            const statusCanvas = document.getElementById('statusChart');
+            if (statusCanvas) {
+                const statusCtx = statusCanvas.getContext('2d');
+                new Chart(statusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.status.map(d => `${d.status} (${d.count})`),
+                        datasets: [{
+                            data: data.status.map(d => d.count),
+                            backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c'],
+                            borderWidth: 3,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: {
+                                        size: 12
+                                    },
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${percentage}%`;
+                                    }
+                                }
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
             
         });
     </script>
