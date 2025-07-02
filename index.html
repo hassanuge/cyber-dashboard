@@ -124,7 +124,7 @@
 <body>
     <div class="dashboard">
         <div class="header">
-            <h1>🔐 Cyber Crime Centre (C3) Statistics Dashboard</h1>
+            <h1>🔐 Cyber Security Statistics Dashboard</h1>
             <div class="subtitle">Comprehensive Analysis of Awareness Sessions & Cyber Crime Support</div>
         </div>
         
@@ -312,7 +312,7 @@
                 new Chart(audienceCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: data.audience.map(d => `${d.type} (${d.count})`),
+                        labels: data.audience.map(d => `${d.type}: ${d.count} sessions`),
                         datasets: [{
                             data: data.audience.map(d => d.count),
                             backgroundColor: ['#667eea', '#764ba2', '#f093fb'],
@@ -328,9 +328,12 @@
                                 position: 'bottom',
                                 labels: {
                                     font: {
-                                        size: 12
+                                        size: 14,
+                                        weight: 'bold'
                                     },
-                                    padding: 15
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
                                 }
                             },
                             tooltip: {
@@ -340,9 +343,14 @@
                                         const value = context.parsed;
                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                         const percentage = Math.round((value / total) * 100);
-                                        return `${label}: ${percentage}%`;
+                                        return `${label} (${percentage}%)`;
                                     }
                                 }
+                            }
+                        },
+                        elements: {
+                            arc: {
+                                borderWidth: 3
                             }
                         }
                     }
